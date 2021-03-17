@@ -3,61 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   philo_one.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: efumiko <efumiko@student.21-school.ru>     +#+  +:+       +#+        */
+/*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 12:29:20 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/05 16:22:42 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/17 14:06:13 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include "phile_one.h"
 
-#define PHT_SIZE 5
-
-typedef struct	s_input_args
-{
-	unsigned int num_philo;
-	unsigned int time_die; 
-	unsigned int time_eat;
-	unsigned int time_sleep;
-	unsigned int times_must_eat;
-}				t_input_args;
-
-typedef struct	s_philosopher {
-	unsigned int number_philo;
-	unsigned int left_fork;
-	unsigned int right_fork;
-}				t_philosopher;
-
-typedef struct	s_table {
-    pthread_mutex_t forks[PHT_SIZE];
-} 				t_table;
-
-typedef struct	s_philosopher_args {
-    const t_philosopher *philosopher;
-    const t_table *table;
-	const t_input_args *input_args;
-}				t_philosopher_args;
 
 pthread_mutex_t entry_point = PTHREAD_MUTEX_INITIALIZER;
-
-void init_philosopher(t_philosopher *philosopher, unsigned int number_philo, \
-						unsigned int left_fork, unsigned int right_fork) {
-    philosopher->number_philo = number_philo;
-    philosopher->left_fork = left_fork;
-    philosopher->right_fork = right_fork;
-}
- 
-void init_table(t_table *table) {
-    size_t i;
-    for (i = 0; i < PHT_SIZE; i++)
-        pthread_mutex_init(&table->forks[i], NULL);
-}
 
 
 // void* eat(void *args) 
@@ -80,12 +36,13 @@ void init_table(t_table *table) {
 //     printf("%u finished dinner\n", philosopher->number_philo);
 // }
 
+/*
 void* eat(void *args) 
 {
     t_philosopher_args *arg = (t_philosopher_args*)args;
     const t_philosopher *philosopher = arg->philosopher;
     const t_table *table = arg->table;
-	const t_input_args *input_args = arg->input_args;
+	//const t_input_args *input_args = arg->input_args;
     unsigned r;  
  
 	// int cur_time;
@@ -94,7 +51,6 @@ void* eat(void *args)
 	{
 		while (1)
 		{
-
 			// философ ест + защита от дедлока
 			pthread_mutex_lock(&entry_point);
 			pthread_mutex_lock(&table->forks[philosopher->left_fork]);
@@ -114,46 +70,88 @@ void* eat(void *args)
 			//printf("%u finished dinner\n", philosopher->number_philo);
 		}
 	}
-	else
-	{
-		while (times_eat < input_args->times_must_eat)
-		{
+} */
 
-			pthread_mutex_lock(&entry_point);
-			pthread_mutex_lock(&table->forks[philosopher->left_fork]);
-			printf("%u started dinner\n", philosopher->number_philo);
-			usleep(input_args->time_eat);
-			pthread_mutex_lock(&table->forks[philosopher->right_fork]);
-			pthread_mutex_unlock(&entry_point);
-			
-			printf("%u is eating after %d ms sleep\n", philosopher->number_philo, r);
-			
-			pthread_mutex_unlock(&table->forks[philosopher->right_fork]);
-			pthread_mutex_unlock(&table->forks[philosopher->left_fork]);
-			
-					
-			printf("%u finished dinner\n", philosopher->number_philo);
-			
-			times_eat++;
-		}
-	}
+
+void *eat(void *args)
+{
+	printf("start eating\n");
 }
 
-void init_input_args(t_input_args *input_args, char **argv)
+void init_input_args(t_input_args *input_args, char **argv, int argc)
 {
-	if (!argv[1] || !argv[2] || !argv[3] || !argv[4])
+	if (argc != 5 && argc != 6)
 		exit(1);
-	input_args->num_philo = atoi(argv[1]);
+	input_args->amount_philo = atoi(argv[1]);
 	input_args->time_die = atoi(argv[2]); 
 	input_args->time_eat = atoi(argv[3]);
 	input_args->time_sleep = atoi(argv[4]);
-	input_args->times_must_eat = argv[1] ? atoi(argv[5]) : 0;
+	input_args->times_must_eat = argv[5] ? atoi(argv[5]) : 0;
 }
 
-int main(int agrc, char **argv) 
+
+void init_philosopher(t_philosopher *philosopher, unsigned int number_philo, \
+						unsigned int left_fork, unsigned int right_fork) {
+    philosopher->number_philo = number_philo;
+    philosopher->left_fork = left_fork;
+    philosopher->right_fork = right_fork;
+}
+
+int init_philosopher_args(t_philosopher_args *philo_args, 
+							t_input_args *input_args)
+{
+	int i;
+	pthread_mutex_t *forks;
+	
+	if (!(philo_args = malloc(sizeof(t_philosopher_args) * input_args->amount_philo)))
+		exit(1);
+	if (!(forks = malloc(sizeof(pthread_mutex_t) * input_args->amount_philo)))
+		exit(1);
+	// Получили массив из num_philo элементов
+    
+	i = -1;
+	while (++i < input_args->amount_philo)
+	    pthread_mutex_init(&forks[i], NULL);
+	i = -1;
+	while (++i < input_args->amount_philo)
+	{
+		if (i == (input_args->amount_philo - 1))
+			init_philosopher(&philo_args[i].philosopher, i + 1, i, 0);
+		else
+			init_philosopher(&philo_args[i].philosopher, i + 1, i, i + 1);
+		philo_args[i].forks = forks;
+		philo_args[i].input_args = input_args;
+	}
+	
+}
+
+int main(int argc, char **argv)
 {
 	t_input_args input_args;
+	t_philosopher_args *philo_args;
+	pthread_t *phil;
+	/* Init args, mutex(forks) and philosophers */
 
+	init_input_args(&input_args, argv, argc);
+	init_philosopher_args(philo_args, &input_args);	
+	if (!(phil = malloc(sizeof(pthread_t) * 5)))
+		exit(1);
+
+	printf("%d, %d, %d, %d, %d\n", input_args.amount_philo, input_args.time_die, input_args.time_eat,
+								input_args.time_sleep, input_args.times_must_eat);
+	
+	int i = -1;
+	while (++i < 5)
+		pthread_create(&phil[i], NULL, eat, NULL);
+	
+	i = -1;
+	while (++i < 5)
+		pthread_join(phil[i], NULL);
+}
+
+/*
+int main(int agrc, char **argv) 
+{
     pthread_t *threads; // Массив потоков размера num_philo 
     t_philosopher *philosophers; // Массив философов
     t_philosopher_args *arguments; // Массив содержащий стол (массив вилок), который общий для всех и отдельного философа. Для передачи в поток
@@ -225,3 +223,4 @@ int main(int agrc, char **argv)
 	// освобождение памяти 
     wait(NULL);
 }
+*/
