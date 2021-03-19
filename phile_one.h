@@ -4,9 +4,13 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 
+#define MS 1000
 
 #define PHT_SIZE 5
+#define MESG_FORK "has taken a fork"
+#define MESG_EAT "is eating"
 
 typedef struct	s_input_args {
 	unsigned int amount_philo;
@@ -25,5 +29,6 @@ typedef struct	s_philosopher {
 typedef struct	s_philosopher_args {
     t_philosopher philosopher;
     pthread_mutex_t *forks;
+	pthread_mutex_t *entry_point;
 	const t_input_args *input_args;
 }				t_philosopher_args;
