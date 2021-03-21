@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:36:21 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/20 19:55:45 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/21 21:13:13 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,10 @@
 # define SUCCES 0
 # define FAIL 1
 
+# define NUMBER_ARGS 1
+# define INCORRECT_ARGS 2
+# define MALLOC_ERR 3
+
 # define MSG_FORK "has taken a fork"
 # define MSG_EAT "is eating"
 # define MSG_SLEEP "is sleeping"
@@ -33,27 +37,28 @@
 
 
 typedef struct	s_input_args {
-	unsigned int amount_philo;
-	unsigned int time_die; 
-	unsigned int time_eat;
-	unsigned int time_sleep;
-	unsigned int times_must_eat;
+	unsigned int	amount_philo;
+	unsigned int	time_die; 
+	unsigned int	time_eat;
+	unsigned int	time_sleep;
+	unsigned int	times_must_eat;
+	unsigned int	time_start;
+	int				is_dead;
 }				t_input_args;
 
 typedef struct	s_philosopher {
-	unsigned int number_philo;
-	unsigned int left_fork;
-	unsigned int right_fork;
+	unsigned int	number_philo;
+	unsigned int	left_fork;
+	unsigned int	right_fork;
 }				t_philosopher;
 
 typedef struct	s_philosopher_args {
-    t_philosopher philosopher;
-    pthread_mutex_t *forks;
-	const t_input_args *input_args;
-	unsigned int time_usec;
-	unsigned int time_sec;
-	unsigned int last_meal;
-	int is_dead;
+    t_philosopher	philosopher;
+	t_input_args	*input_args;
+    pthread_mutex_t	*forks;
+	pthread_mutex_t	checker_mutex;
+	pthread_t		checker_thread;
+	unsigned int	last_meal;
 }				t_philosopher_args;
 
 
@@ -65,7 +70,9 @@ void 				init_philosopher(t_philosopher *philosopher,\
 									unsigned int left_fork, \
 									unsigned int right_fork);
 t_philosopher_args	*init_philosopher_args(t_input_args *input_args);
-
+void				free_all(t_philosopher_args *philo_args);
 int					ft_atoi(const char *str);
+unsigned int		get_time();
+int				print_error(int code_error, t_philosopher_args *p_args);
 
 #endif
