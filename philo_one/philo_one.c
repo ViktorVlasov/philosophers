@@ -6,17 +6,15 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 12:29:20 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/21 21:25:16 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/22 22:14:57 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "phile_one.h"
+#include "philo_one.h"
 
-// Что, если times_must_eat == 0?
-pthread_mutex_t g_entry_point;
 pthread_mutex_t g_print;
 
-void print_mesg(t_philosopher_args *p_args, char *mesg)
+void	print_mesg(t_philosopher_args *p_args, char *mesg)
 {
 	unsigned int t_start;
 
@@ -26,15 +24,16 @@ void print_mesg(t_philosopher_args *p_args, char *mesg)
 	{
 		pthread_mutex_unlock(&g_print);
 		return ;
-	}	
-	printf("%u %d %s\n", get_time() - t_start, p_args->philosopher.number_philo, mesg);	
+	}
+	printf("%u %d %s\n", get_time() - t_start, \
+		p_args->philosopher.number_philo, mesg);
 	pthread_mutex_unlock(&g_print);
 }
 
-void *check_death(void *args)
+void	*check_death(void *args)
 {
 	t_philosopher_args *p_args;
-	
+
 	p_args = (t_philosopher_args*)args;
 	pthread_detach(p_args->checker_thread);
 	while (!p_args->input_args->is_dead)
@@ -48,12 +47,12 @@ void *check_death(void *args)
 			return (NULL);
 		}
 		pthread_mutex_unlock(&p_args->checker_mutex);
-		usleep(MS); 
+		usleep(MS);
 	}
 	return (NULL);
 }
 
-int eat(t_philosopher_args *p_args, t_philosopher philo, int *count_meal)
+int		eat(t_philosopher_args *p_args, t_philosopher philo, int *count_meal)
 {
 	if (p_args->input_args->is_dead)
 		return (FAIL);
@@ -69,26 +68,24 @@ int eat(t_philosopher_args *p_args, t_philosopher philo, int *count_meal)
 	usleep(p_args->input_args->time_eat * MS);
 	pthread_mutex_unlock(&p_args->forks[philo.right_fork]);
 	pthread_mutex_unlock(&p_args->forks[philo.left_fork]);
+	return (SUCCES);
 }
 
-void *philosophize(void *args)
+void	*philosophize(void *args)
 {
-	t_philosopher_args *p_args;
-	t_philosopher philo;
-	pthread_t checker;
-	int count_meal;
-	
+	t_philosopher_args	*p_args;
+	int					count_meal;
+
 	p_args = (t_philosopher_args*)args;
-	philo = p_args->philosopher;
 	count_meal = 0;
 	p_args->last_meal = get_time() + p_args->input_args->time_die;
 	pthread_create(&p_args->checker_thread, NULL, check_death, p_args);
-	if (philo.number_philo % 2 == 0)
+	if (p_args->philosopher.number_philo % 2 == 0)
 		usleep(MS * p_args->input_args->time_eat);
 	while (!p_args->input_args->is_dead)
 	{
-		eat(p_args, philo, &count_meal);
-		if ((p_args->input_args->times_must_eat != 0 && 
+		eat(p_args, p_args->philosopher, &count_meal);
+		if ((p_args->input_args->times_must_eat != 0 &&
 			count_meal == p_args->input_args->times_must_eat) ||
 			p_args->input_args->is_dead)
 			break ;
@@ -98,17 +95,17 @@ void *philosophize(void *args)
 		usleep(p_args->input_args->time_sleep * MS);
 		print_mesg(p_args, MSG_THINK);
 	}
-	pthread_mutex_unlock(&p_args->forks[philo.right_fork]);
-	pthread_mutex_unlock(&p_args->forks[philo.left_fork]);
+	// pthread_mutex_unlock(&p_args->forks[philo.right_fork]);
+	// pthread_mutex_unlock(&p_args->forks[philo.left_fork]);
 	return (NULL);
 }
 
-int main(int argc, char **argv)
+int		main(int argc, char **argv)
 {
-	t_input_args input_args;
-	t_philosopher_args *philo_args;
-	pthread_t *phil;
-	int i;
+	t_input_args		input_args;
+	t_philosopher_args	*philo_args;
+	pthread_t			*phil;
+	int					i;
 
 	pthread_mutex_init(&g_print, NULL);
 	init_input_args(&input_args, argv, argc);

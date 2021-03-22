@@ -6,13 +6,13 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:55:08 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/21 21:12:46 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/22 22:05:22 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "phile_one.h"
+#include "philo_one.h"
 
-int	ft_atoi(const char *str)
+int				ft_atoi(const char *str)
 {
 	int	nb;
 	int	mark;
@@ -41,10 +41,10 @@ int	ft_atoi(const char *str)
 	return (nb);
 }
 
-void free_all(t_philosopher_args *philo_args)
+void			free_all(t_philosopher_args *philo_args)
 {
-	int i;
-	int ph_num;
+	int	i;
+	int	ph_num;
 
 	i = -1;
 	ph_num = philo_args->input_args->amount_philo;
@@ -62,7 +62,7 @@ void free_all(t_philosopher_args *philo_args)
 	}
 }
 
-int print_error(int code_error, t_philosopher_args *philo_args)
+int				print_error(int code_error, t_philosopher_args *philo_args)
 {
 	if (code_error == NUMBER_ARGS)
 	{
@@ -77,4 +77,14 @@ int print_error(int code_error, t_philosopher_args *philo_args)
 	if (philo_args)
 		free_all(philo_args);
 	return (1);
+}
+
+unsigned int	get_time(void)
+{
+	struct timeval	tv;
+	unsigned int	time;
+
+	gettimeofday(&tv, NULL);
+	time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	return (time);
 }

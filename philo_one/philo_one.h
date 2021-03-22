@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   phile_one.h                                        :+:      :+:    :+:   */
+/*   philo_one.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:36:21 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/21 21:13:13 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/22 22:12:54 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,44 +35,42 @@
 # define MSG_THINK "is thinking"
 # define MSG_DIED "is died"
 
-
-typedef struct	s_input_args {
-	unsigned int	amount_philo;
-	unsigned int	time_die; 
-	unsigned int	time_eat;
-	unsigned int	time_sleep;
-	unsigned int	times_must_eat;
-	unsigned int	time_start;
+typedef struct		s_input_args {
+	int				amount_philo;
+	int				time_die;
+	int				time_eat;
+	int				time_sleep;
+	int				times_must_eat;
+	int				time_start;
 	int				is_dead;
-}				t_input_args;
+}					t_input_args;
 
-typedef struct	s_philosopher {
+typedef struct		s_philosopher {
 	unsigned int	number_philo;
 	unsigned int	left_fork;
 	unsigned int	right_fork;
-}				t_philosopher;
+}					t_philosopher;
 
-typedef struct	s_philosopher_args {
-    t_philosopher	philosopher;
+typedef struct		s_philosopher_args {
+	t_philosopher	philosopher;
 	t_input_args	*input_args;
-    pthread_mutex_t	*forks;
+	pthread_mutex_t	*forks;
 	pthread_mutex_t	checker_mutex;
 	pthread_t		checker_thread;
 	unsigned int	last_meal;
-}				t_philosopher_args;
+}					t_philosopher_args;
 
-
-void 				init_input_args(t_input_args *input_args, \
-									char **argv, \
+void				init_input_args(t_input_args *input_args,\
+									char **argv,\
 									int argc);
-void 				init_philosopher(t_philosopher *philosopher,\
-										unsigned int number_philo, \
-									unsigned int left_fork, \
+void				init_philosopher(t_philosopher	*philosopher,\
+										unsigned int number_philo,\
+									unsigned int left_fork,\
 									unsigned int right_fork);
 t_philosopher_args	*init_philosopher_args(t_input_args *input_args);
 void				free_all(t_philosopher_args *philo_args);
 int					ft_atoi(const char *str);
 unsigned int		get_time();
-int				print_error(int code_error, t_philosopher_args *p_args);
+int					print_error(int code_error, t_philosopher_args *p_args);
 
 #endif
