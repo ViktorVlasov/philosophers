@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 12:29:20 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/23 21:57:27 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/24 00:17:23 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void	print_mesg(t_philosopher_args *p_args, char *mesg)
 		return ;
 	}
 	printf("%u %d %s\n", get_time() - t_start, \
-		p_args->philosopher.number_philo, mesg);
+		p_args->number_philo, mesg);
 	pthread_mutex_unlock(&g_print);
 }
 
@@ -52,13 +52,13 @@ void	*check_death(void *args)
 	return (NULL);
 }
 
-int		eat(t_philosopher_args *p_args, t_philosopher philo, int *count_meal)
+int		eat(t_philosopher_args *p_args, int *count_meal)
 {
 	if (p_args->input_args->is_dead)
 		return (FAIL);
-	pthread_mutex_lock(&p_args->forks[philo.left_fork]);
+	pthread_mutex_lock(p_args->left_fork);
 	print_mesg(p_args, MSG_FORK);
-	pthread_mutex_lock(&p_args->forks[philo.right_fork]);
+	pthread_mutex_lock(p_args->right_fork);
 	print_mesg(p_args, MSG_FORK);
 	pthread_mutex_lock(&p_args->checker_mutex);
 	print_mesg(p_args, MSG_EAT);
@@ -66,8 +66,8 @@ int		eat(t_philosopher_args *p_args, t_philosopher philo, int *count_meal)
 	pthread_mutex_unlock(&p_args->checker_mutex);
 	(*count_meal)++;
 	usleep(p_args->input_args->time_eat * MS);
-	pthread_mutex_unlock(&p_args->forks[philo.right_fork]);
-	pthread_mutex_unlock(&p_args->forks[philo.left_fork]);
+	pthread_mutex_unlock(p_args->right_fork);
+	pthread_mutex_unlock(p_args->left_fork);
 	return (SUCCES);
 }
 
@@ -80,11 +80,9 @@ void	*philosophize(void *args)
 	count_meal = 0;
 	p_args->last_meal = get_time() + p_args->input_args->time_die;
 	pthread_create(&p_args->checker_thread, NULL, check_death, p_args);
-	if (p_args->philosopher.number_philo % 2 == 0)
-		usleep(MS * p_args->input_args->time_eat);
 	while (!p_args->input_args->is_dead)
 	{
-		eat(p_args, p_args->philosopher, &count_meal);
+		eat(p_args, &count_meal);
 		if ((p_args->input_args->times_must_eat != 0 &&
 			count_meal == p_args->input_args->times_must_eat) ||
 			p_args->input_args->is_dead)
@@ -113,7 +111,10 @@ int		main(int argc, char **argv)
 		return (print_error(MALLOC_ERR, philo_args));
 	i = -1;
 	while (++i < input_args.amount_philo)
+	{
 		pthread_create(&phil[i], NULL, philosophize, &philo_args[i]);
+		usleep(MS);
+	}
 	i = -1;
 	while (++i < input_args.amount_philo)
 		pthread_join(phil[i], NULL);

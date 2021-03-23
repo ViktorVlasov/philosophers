@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:36:21 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/23 21:55:16 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/24 00:26:31 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,14 +45,10 @@ typedef struct		s_input_args {
 	int				is_dead;
 }					t_input_args;
 
-typedef struct		s_philosopher {
-	unsigned int	number_philo;
-	unsigned int	left_fork;
-	unsigned int	right_fork;
-}					t_philosopher;
-
 typedef struct		s_philosopher_args {
-	t_philosopher	philosopher;
+	unsigned int	number_philo;
+	pthread_mutex_t *left_fork;
+	pthread_mutex_t	*right_fork;
 	t_input_args	*input_args;
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	checker_mutex;
@@ -63,10 +59,6 @@ typedef struct		s_philosopher_args {
 int					init_input_args(t_input_args *input_args,\
 									char **argv,\
 									int argc);
-void				init_philosopher(t_philosopher	*philosopher,\
-										unsigned int number_philo,\
-									unsigned int left_fork,\
-									unsigned int right_fork);
 t_philosopher_args	*init_philosopher_args(t_input_args *input_args);
 void				free_all(t_philosopher_args *philo_args);
 int					ft_atoi(const char *str);
