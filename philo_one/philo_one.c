@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 12:29:20 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/22 22:31:54 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/23 21:57:27 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,9 +106,9 @@ int		main(int argc, char **argv)
 	int					i;
 
 	pthread_mutex_init(&g_print, NULL);
-	init_input_args(&input_args, argv, argc);
-	if (!(philo_args = init_philosopher_args(&input_args)))
-		return (1);
+	if (init_input_args(&input_args, argv, argc) ||
+		!(philo_args = init_philosopher_args(&input_args)))
+		return (FAIL);
 	if (!(phil = malloc(sizeof(pthread_t) * input_args.amount_philo)))
 		return (print_error(MALLOC_ERR, philo_args));
 	i = -1;

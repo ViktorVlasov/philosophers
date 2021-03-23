@@ -6,17 +6,17 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:32:33 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/22 22:10:48 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/23 22:53:32 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_one.h"
 
-void				init_input_args(t_input_args *input_args, \
+int					init_input_args(t_input_args *input_args, \
 									char **argv, int argc)
 {
 	if (argc != 5 && argc != 6)
-		print_error(NUMBER_ARGS, NULL);
+		return (print_error(NUMBER_ARGS, NULL));
 	input_args->amount_philo = ft_atoi(argv[1]);
 	input_args->time_die = ft_atoi(argv[2]);
 	input_args->time_eat = ft_atoi(argv[3]);
@@ -25,9 +25,10 @@ void				init_input_args(t_input_args *input_args, \
 	if (input_args->amount_philo < 2 || input_args->amount_philo > 200 ||
 		input_args->time_die < 60 || input_args->time_eat < 60 ||
 		input_args->time_sleep < 60 || input_args->times_must_eat < 0)
-		print_error(INCORRECT_ARGS, NULL);
+		return (print_error(INCORRECT_ARGS, NULL));
 	input_args->time_start = get_time();
 	input_args->is_dead = 0;
+	return (SUCCES);
 }
 
 void				init_philosopher(t_philosopher *philosopher,\

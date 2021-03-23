@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:55:08 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/23 21:09:14 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/23 22:55:01 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,21 +68,16 @@ unsigned int	get_time(void)
 	return (time);
 }
 
-void kill_process(t_philosopher_args *philo_args)
+void			kill_process(t_philosopher_args *philo_args)
 {
-	(void)philo_args;
-	// int i;
+	int i;
 
-	// i = -1;
-	//while (++i < philo_args->input_args->amount_philo)
-	//{
-	//	if (philo_args->pid_id > 0)
-	//kill();
-	kill(-1, SIGTERM);
-	//}
+	i = -1;
+	while (++i < philo_args->input_args->amount_philo)
+		kill(philo_args[i].pid_id, SIGTERM);
 }
 
-int wait_process(t_philosopher_args *philo_args)
+int				wait_process(t_philosopher_args *philo_args)
 {
 	int i;
 	int status;
@@ -93,7 +88,7 @@ int wait_process(t_philosopher_args *philo_args)
 		if (wait(&status) == -1)
 			return (FAIL);
 		if (WIFEXITED(status) != 0)
-			kill_process(philo_args);	
+			kill_process(philo_args);
 	}
 	return (SUCCES);
 }

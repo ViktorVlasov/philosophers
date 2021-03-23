@@ -6,27 +6,25 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 12:29:20 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/23 21:04:47 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/23 22:58:40 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_three.h"
 
 sem_t *g_print;
-sem_t *g_d_print;
-
 
 void	print_mesg(t_philosopher_args *p_args, char *mesg)
 {
 	unsigned int t_start;
 
 	t_start = p_args->input_args->time_start;
+	sem_wait(g_print);
 	if (p_args->input_args->is_dead)
 	{
-	//	sem_post(g_print);
+		sem_post(g_print);
 		return ;
 	}
-	sem_wait(g_print);
 	printf("%u %d %s\n", get_time() - t_start, \
 		p_args->number_philo, mesg);
 	sem_post(g_print);
@@ -107,16 +105,13 @@ void	*check_death(void *args)
 	while (!p_args->input_args->is_dead)
 	{
 		sem_wait(p_args->checker);
-        //sem_wait(p_args->fix);
 		if (!p_args->input_args->is_dead && get_time() > p_args->last_meal)
 		{
 			print_mesg(p_args, MSG_DIED);
-            sem_wait(g_print);
+			sem_wait(g_print);
 			p_args->input_args->is_dead = 1;
-			//sem_post(p_args->checker);
 			exit(1);
 		}
-        //sem_post(p_args->fix);
 		sem_post(p_args->checker);
 		usleep(MS);
 	}
@@ -132,8 +127,6 @@ int		main(int argc, char **argv)
 
 	sem_unlink("g_print");
 	g_print = sem_open("g_print", O_CREAT | O_EXCL, 0644, 1);
-	// sem_unlink("double_g_print");
-	// g_d_print = sem_open("double_g_print", O_CREAT | O_EXCL, 0644, 1);
 	init_input_args(&input_args, argv, argc);
 	if (!(philo_args = init_philosopher_args(&input_args)))
 		return (1);
@@ -151,7 +144,6 @@ int		main(int argc, char **argv)
 			return (FAIL);
 		}
 	}
-	//kill_process(philo_args);
 	if (wait_process(philo_args) == FAIL)
 	{
 		free_all(philo_args, phil);

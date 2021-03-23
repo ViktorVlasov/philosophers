@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:36:21 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/22 22:12:54 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/23 21:55:16 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ typedef struct		s_philosopher_args {
 	unsigned int	last_meal;
 }					t_philosopher_args;
 
-void				init_input_args(t_input_args *input_args,\
+int					init_input_args(t_input_args *input_args,\
 									char **argv,\
 									int argc);
 void				init_philosopher(t_philosopher	*philosopher,\
