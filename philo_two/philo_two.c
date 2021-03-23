@@ -1,33 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   philo_one.c                                        :+:      :+:    :+:   */
+/*   philo_two.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 12:29:20 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/22 22:31:54 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/23 11:28:50 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philo_one.h"
+#include "philo_two.h"
 
-pthread_mutex_t g_print;
+sem_t *g_print;
 
 void	print_mesg(t_philosopher_args *p_args, char *mesg)
 {
 	unsigned int t_start;
 
 	t_start = p_args->input_args->time_start;
-	pthread_mutex_lock(&g_print);
+	sem_wait(g_print);
 	if (p_args->input_args->is_dead)
 	{
-		pthread_mutex_unlock(&g_print);
+		sem_post(g_print);
 		return ;
 	}
 	printf("%u %d %s\n", get_time() - t_start, \
 		p_args->philosopher.number_philo, mesg);
-	pthread_mutex_unlock(&g_print);
+	sem_post(g_print);
 }
 
 void	*check_death(void *args)
@@ -38,36 +38,36 @@ void	*check_death(void *args)
 	pthread_detach(p_args->checker_thread);
 	while (!p_args->input_args->is_dead)
 	{
-		pthread_mutex_lock(&p_args->checker_mutex);
+		sem_wait(p_args->checker_mutex);
 		if (!p_args->input_args->is_dead && get_time() > p_args->last_meal)
 		{
 			print_mesg(p_args, MSG_DIED);
 			p_args->input_args->is_dead = 1;
-			pthread_mutex_unlock(&p_args->checker_mutex);
+			sem_post(p_args->checker_mutex);
 			return (NULL);
 		}
-		pthread_mutex_unlock(&p_args->checker_mutex);
+		sem_post(p_args->checker_mutex);
 		usleep(MS);
 	}
 	return (NULL);
 }
 
-int		eat(t_philosopher_args *p_args, t_philosopher philo, int *count_meal)
+int		eat(t_philosopher_args *p_args, int *count_meal)
 {
 	if (p_args->input_args->is_dead)
 		return (FAIL);
-	pthread_mutex_lock(&p_args->forks[philo.left_fork]);
+	sem_wait(p_args->forks);
 	print_mesg(p_args, MSG_FORK);
-	pthread_mutex_lock(&p_args->forks[philo.right_fork]);
+	sem_wait(p_args->forks);
 	print_mesg(p_args, MSG_FORK);
-	pthread_mutex_lock(&p_args->checker_mutex);
+	sem_wait(p_args->checker_mutex);
 	print_mesg(p_args, MSG_EAT);
 	p_args->last_meal = get_time() + p_args->input_args->time_die;
-	pthread_mutex_unlock(&p_args->checker_mutex);
+	sem_post(p_args->checker_mutex);
 	(*count_meal)++;
 	usleep(p_args->input_args->time_eat * MS);
-	pthread_mutex_unlock(&p_args->forks[philo.right_fork]);
-	pthread_mutex_unlock(&p_args->forks[philo.left_fork]);
+	sem_post(p_args->forks);
+	sem_post(p_args->forks);
 	return (SUCCES);
 }
 
@@ -84,7 +84,7 @@ void	*philosophize(void *args)
 		usleep(MS * p_args->input_args->time_eat);
 	while (!p_args->input_args->is_dead)
 	{
-		eat(p_args, p_args->philosopher, &count_meal);
+		eat(p_args, &count_meal);
 		if ((p_args->input_args->times_must_eat != 0 &&
 			count_meal == p_args->input_args->times_must_eat) ||
 			p_args->input_args->is_dead)
@@ -105,7 +105,8 @@ int		main(int argc, char **argv)
 	pthread_t			*phil;
 	int					i;
 
-	pthread_mutex_init(&g_print, NULL);
+	sem_unlink("g_print");
+	g_print = sem_open("g_print", O_CREAT | O_EXCL, 0644, 1);
 	init_input_args(&input_args, argv, argc);
 	if (!(philo_args = init_philosopher_args(&input_args)))
 		return (1);
@@ -117,8 +118,8 @@ int		main(int argc, char **argv)
 	i = -1;
 	while (++i < input_args.amount_philo)
 		pthread_join(phil[i], NULL);
-	pthread_mutex_destroy(&g_print);
-	if (phil)
-		free(phil);
+	sem_close(g_print);
+	sem_unlink("g_print");
+	free(phil);
 	free_all(philo_args);
 }
