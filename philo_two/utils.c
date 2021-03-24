@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:55:08 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/23 17:45:45 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/24 01:03:33 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void			free_all(t_philosopher_args *philo_args)
 {
 	if (philo_args)
 	{
-		sem_close(philo_args->checker_mutex);
+		sem_close(philo_args->checker);
 		sem_close(philo_args->forks);
 		sem_unlink("checker");
 		sem_unlink("forks");
