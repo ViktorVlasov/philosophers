@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:55:08 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/24 11:46:04 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/24 13:06:25 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,17 +41,26 @@ int				ft_atoi(const char *str)
 	return (nb);
 }
 
-void			free_all(t_philosopher_args *philo_args)
-{
-	if (philo_args)
-	{
-		sem_close(philo_args->checker);
-		sem_close(philo_args->forks);
-		sem_unlink("checker");
-		sem_unlink("forks");
-		free(philo_args);
-	}
-}
+// void			free_all(t_philosopher_args *philo_args)
+// {
+// 	int	i;
+// 	int	ph_num;
+
+// 	i = -1;
+// 	ph_num = philo_args->input_args->amount_philo;
+// 	if (philo_args)
+// 	{
+// 		while (++i < ph_num)
+// 		{
+// 			if (philo_args->forks)
+// 				pthread_mutex_destroy(&philo_args->forks[i]);
+// 			pthread_mutex_destroy(&philo_args[i].checker_mutex);
+// 		}
+// 		if (philo_args->forks)
+// 			free(philo_args->forks);
+// 		free(philo_args);
+// 	}
+// }
 
 int				print_error(int code_error, t_philosopher_args *philo_args)
 {
@@ -65,8 +74,8 @@ int				print_error(int code_error, t_philosopher_args *philo_args)
 		printf("Incorrect arguments! Try again :)\n");
 	else if (code_error == MALLOC_ERR)
 		printf("Memory allocation error!\n");
-	if (philo_args)
-		free_all(philo_args);
+	// if (philo_args)
+	// 	free_all(philo_args);
 	return (1);
 }
 
