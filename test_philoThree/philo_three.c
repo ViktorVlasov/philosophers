@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   philo_two.c                                        :+:      :+:    :+:   */
+/*   philo_twtwo.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ddraco <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 12:29:20 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/26 23:23:41 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/26 22:66:47 by ddraco           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philo_two.h"
+#include "philo_three.h"
 
 sem_t *g_print;
 
@@ -20,8 +20,7 @@ void	print_mesg(t_philosopher_args *p_args, char *mesg)
 
 	t_start = p_args->input_args->time_start;
 	sem_wait(g_print);
-	if (p_args->input_args->is_dead ||
-		p_args->input_args->nb_ph_ate == p_args->input_args->amount_philo)
+	if (p_args->input_args->is_dead)
 	{
 		sem_post(g_print);
 		return ;
@@ -39,15 +38,16 @@ void	*check_death(void *args)
 	pthread_detach(p_args->checker_thread);
 	while (!p_args->input_args->is_dead)
 	{
-		sem_wait(p_args->checker);
+		sem_wait(p_args->checker_sem);
 		if (!p_args->input_args->is_dead && get_time() > p_args->last_meal)
 		{
 			print_mesg(p_args, MSG_DIED);
+			sem_wait(g_print);
 			p_args->input_args->is_dead = 1;
-			sem_post(p_args->checker);
-			return (NULL);
+			//sem_post(p_args->checker_sem);
+			exit (DIE);
 		}
-		sem_post(p_args->checker);
+		sem_post(p_args->checker_sem);
 		usleep(MS);
 	}
 	return (NULL);
@@ -55,24 +55,21 @@ void	*check_death(void *args)
 
 sem_t *g_block;
 
-int		eat(t_philosopher_args *p_args)
+int		eat(t_philosopher_args *p_args, int *count_meal)
 {
 	if (p_args->input_args->is_dead)
-		return (FAIL);
+		exit (DIE);
 	sem_wait(g_block);
 	sem_wait(p_args->forks);
-	sem_wait(p_args->forks);
+	print_mesg(p_args, MSG_FORK);
+	sem_wait(p_args->forks);	
+	print_mesg(p_args, MSG_FORK);
 	sem_post(g_block);
-	print_mesg(p_args, MSG_FORK);
-	print_mesg(p_args, MSG_FORK);
-	sem_wait(p_args->checker);
+	sem_wait(p_args->checker_sem);
 	print_mesg(p_args, MSG_EAT);
 	p_args->last_meal = get_time() + p_args->input_args->time_die;
-	sem_post(p_args->checker);
-	p_args->count_meal++;
-	if (p_args->input_args->times_must_eat != 0 &&
-			p_args->count_meal == p_args->input_args->times_must_eat)
-		p_args->input_args->nb_ph_ate += 1;
+	sem_post(p_args->checker_sem);
+	(*count_meal)++;
 	usleep(p_args->input_args->time_eat * MS);
 	sem_post(p_args->forks);
 	sem_post(p_args->forks);
@@ -82,38 +79,85 @@ int		eat(t_philosopher_args *p_args)
 void	*philosophize(void *args)
 {
 	t_philosopher_args	*p_args;
-	int					max_eat;
+	int					count_meal;
 
 	p_args = (t_philosopher_args*)args;
+	count_meal = 0;
 	p_args->last_meal = get_time() + p_args->input_args->time_die;
 	pthread_create(&p_args->checker_thread, NULL, check_death, p_args);
-	max_eat = p_args->input_args->times_must_eat;
-	// if (p_args->number_philo % 2 == 0)
-		// usleep(MS * p_args->input_args->time_eat);
 	while (!p_args->input_args->is_dead)
 	{
-		eat(p_args);
-		if (p_args->input_args->nb_ph_ate == p_args->input_args->amount_philo)
-		{
-			p_args->input_args->is_dead = 1;
-			break ;
-		}
+		eat(p_args, &count_meal);
+		if ((p_args->input_args->times_must_eat != 0 &&
+			count_meal == p_args->input_args->times_must_eat))
+			exit(SUCCES);
 		if (p_args->input_args->is_dead)
-			break ;
-		usleep(p_args->input_args->time_sleep * MS);
+			exit (DIE);
 		print_mesg(p_args, MSG_SLEEP);
 		if (p_args->input_args->is_dead)
-			break ;
+			exit (DIE);
+		usleep(p_args->input_args->time_sleep * MS);
 		print_mesg(p_args, MSG_THINK);
 	}
-	return (NULL);
+}
+
+void			kill_process(t_philosopher_args *philo_args)
+{
+	int i;
+
+	i = -1;
+	while (++i < philo_args->input_args->amount_philo)
+		kill(philo_args[i].pid_id, SIGKILL);
+}
+
+int				wait_process(t_philosopher_args *philo_args)
+{
+	int i;
+	int status;
+
+	i = -1;
+	while (++i < philo_args->input_args->amount_philo)
+	{
+		if (wait(&status) == -1)
+			return (FAIL);
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == DIE)
+				kill_process(philo_args);		
+		}
+	}
+	return (SUCCES);
+}
+
+int		start_p(t_philosopher_args *philo_args, t_input_args input_args)
+{
+	int i;
+	
+	i = -1;
+	while (++i < input_args.amount_philo)
+	{
+		if (!(philo_args[i].pid_id = fork()))
+			philosophize(&philo_args[i]);
+		else if (philo_args[i].pid_id < 0)
+		{
+			kill_process(philo_args);
+			free_all(philo_args);
+			return (FAIL);
+		}
+		usleep(MS);
+	}
+	if (wait_process(philo_args) == FAIL)
+	{
+		free_all(philo_args);
+		return (FAIL);
+	}
+	return (SUCCES);
 }
 
 int		main(int argc, char **argv)
 {
 	t_input_args		input_args;
 	t_philosopher_args	*philo_args;
-	pthread_t			*phil;
 	int					i;
 
 	sem_unlink("block");
@@ -122,20 +166,11 @@ int		main(int argc, char **argv)
 	g_print = sem_open("g_print", O_CREAT | O_EXCL, 0644, 1);
 	if (init_input_args(&input_args, argv, argc) ||
 		!(philo_args = init_philosopher_args(&input_args)))
-		return (1);
-	if (!(phil = malloc(sizeof(pthread_t) * input_args.amount_philo)))
-		return (print_error(MALLOC_ERR, philo_args));
-	i = -1;
-	while (++i < input_args.amount_philo)
-	{
-		pthread_create(&phil[i], NULL, philosophize, &philo_args[i]);
-		usleep(MS);
-	}
-	i = -1;
-	while (++i < input_args.amount_philo)
-		pthread_join(phil[i], NULL);
+		return (FAIL);
+	if (start_p(philo_args, input_args) == FAIL)
+		return (FAIL);
 	sem_close(g_print);
 	sem_unlink("g_print");
-	free(phil);
 	free_all(philo_args);
+	exit(SUCCES);
 }

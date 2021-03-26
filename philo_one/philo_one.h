@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:36:21 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/24 00:26:31 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/26 22:36:57 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ typedef struct		s_input_args {
 }					t_input_args;
 
 typedef struct		s_philosopher_args {
-	unsigned int	number_philo;
+	int				number_philo;
 	pthread_mutex_t *left_fork;
 	pthread_mutex_t	*right_fork;
 	t_input_args	*input_args;
