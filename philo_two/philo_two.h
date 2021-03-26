@@ -6,12 +6,12 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:36:21 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/24 12:07:47 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/26 22:25:223 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PHILO_TWO_H
-# define PHILO_TWO_H
+#ifndef PHILO_ONE_H
+# define PHILO_ONE_H
 
 # include <stdlib.h>
 # include <unistd.h>
@@ -46,24 +46,23 @@ typedef struct		s_input_args {
 	int				times_must_eat;
 	int				time_start;
 	int				is_dead;
-	int				nb_ph_ate;
 }					t_input_args;
 
 typedef struct		s_philosopher_args {
 	unsigned int	number_philo;
 	t_input_args	*input_args;
 	sem_t			*forks;
+	sem_t			*checker_sem;
 	pthread_t		checker_thread;
 	unsigned int	last_meal;
-	sem_t			*checker;
-	char			*name;
-	int				count_meal;
+	sem_t			*sem_print;
+	sem_t			*sem_block;
 }					t_philosopher_args;
 
 int					init_input_args(t_input_args *input_args,\
 									char **argv,\
 									int argc);
-t_philosopher_args	*init_philosopher_args(t_input_args *input_args);
+t_philosopher_args	*init_philosopher_args(t_input_args *input_args, int i);
 void				free_all(t_philosopher_args *philo_args);
 int					ft_atoi(const char *str);
 unsigned int		get_time();

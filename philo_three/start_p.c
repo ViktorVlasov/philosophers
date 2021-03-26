@@ -5,43 +5,45 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/25 02:04:09 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/25 02:27:17 by efumiko          ###   ########.fr       */
+/*   Created: 2021/03/27 01:24:00 by efumiko           #+#    #+#             */
+/*   Updated: 2021/03/27 01:32:34 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_three.h"
 
-void	*philosophize(void *args)
+void	kill_process(t_philosopher_args *philo_args)
 {
-	t_philosopher_args	*p_args;
-	int					max_eat;
+	int i;
 
-	p_args = (t_philosopher_args*)args;
-	max_eat = p_args->input_args->times_must_eat;
-	p_args->last_meal = get_time() + p_args->input_args->time_die;
-	pthread_create(&p_args->checker_thread, NULL, check_death, p_args);
-	if (p_args->number_philo % 2 == 0)
-		usleep(p_args->input_args->time_eat * MS);
-	while (!p_args->input_args->is_dead)
+	i = -1;
+	while (++i < philo_args->input_args->amount_philo)
+		kill(philo_args[i].pid_id, SIGKILL);
+}
+
+int		wait_process(t_philosopher_args *philo_args)
+{
+	int i;
+	int status;
+
+	i = -1;
+	while (++i < philo_args->input_args->amount_philo)
 	{
-		eat(p_args);
-		if (p_args->input_args->is_dead || (p_args->input_args->times_must_eat &&\
-		p_args->count_meal == p_args->input_args->times_must_eat))
-		    break ;
-        print_mesg(p_args, MSG_SLEEP);
-		usleep(p_args->input_args->time_sleep * MS);
-		print_mesg(p_args, MSG_THINK);
+		if (wait(&status) == -1)
+			return (FAIL);
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == DIE)
+				kill_process(philo_args);
+		}
 	}
-    if (p_args->input_args->is_dead)
-        exit(DIED);
-	exit(DIED);
+	return (SUCCES);
 }
 
 int		start_p(t_philosopher_args *philo_args, t_input_args input_args)
 {
 	int i;
-	
+
 	i = -1;
 	while (++i < input_args.amount_philo)
 	{
@@ -53,6 +55,7 @@ int		start_p(t_philosopher_args *philo_args, t_input_args input_args)
 			free_all(philo_args);
 			return (FAIL);
 		}
+		usleep(MS);
 	}
 	if (wait_process(philo_args) == FAIL)
 	{

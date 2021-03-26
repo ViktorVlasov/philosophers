@@ -6,7 +6,7 @@
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 19:55:08 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/24 11:46:04 by efumiko          ###   ########.fr       */
+/*   Updated: 2021/03/27 02:08:50 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,12 @@ void			free_all(t_philosopher_args *philo_args)
 {
 	if (philo_args)
 	{
-		sem_close(philo_args->checker);
+		sem_close(philo_args->checker_sem);
 		sem_close(philo_args->forks);
+		sem_close(philo_args->sem_print);
+		sem_close(philo_args->sem_block);
+		sem_unlink("sem_print");
+		sem_unlink("sem_block");
 		sem_unlink("checker");
 		sem_unlink("forks");
 		free(philo_args);
