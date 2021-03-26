@@ -55,38 +55,14 @@ typedef struct		s_philosopher_args {
 	sem_t			*checker_sem;
 	pthread_t		checker_thread;
 	unsigned int	last_meal;
+	sem_t			*sem_print;
+	sem_t			*sem_block;
 }					t_philosopher_args;
-
-// typedef struct		s_info
-// {
-// 	int				amount;
-// 	int				nbr_each_eat;
-// 	int				dead;
-// 	uint64_t		time_to_die;
-// 	uint64_t		time_to_eat;
-// 	uint64_t		time_to_sleep;
-// 	uint64_t		start;
-// 	sem_t			*forks;
-// 	sem_t			*print_sem;
-// 	sem_t			*print_dead_sem;
-// 	sem_t			*semaphor;
-// }					t_info;
-
-// typedef struct		s_ph
-// {
-// 	pid_t			pid;
-// 	pthread_t		status_thread;
-
-// 	int				place;
-// 	int				meals;
-// 	uint64_t		lst_meal;
-// 	t_info			*info;
-// }					t_ph;
 
 int					init_input_args(t_input_args *input_args,\
 									char **argv,\
 									int argc);
-t_philosopher_args	*init_philosopher_args(t_input_args *input_args);
+t_philosopher_args	*init_philosopher_args(t_input_args *input_args, int i);
 void				free_all(t_philosopher_args *philo_args);
 int					ft_atoi(const char *str);
 unsigned int		get_time();

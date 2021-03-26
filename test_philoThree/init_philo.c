@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/20 19:32:33 by efumiko           #+#    #+#             */
-/*   Updated: 2021/03/26 22:34:111 by efumiko          ###   ########.fr       */
+/*   Created: 2021/03/27 01:22:56 by efumiko           #+#    #+#             */
+/*   Updated: 2021/03/27 01:59:08 by efumiko          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,28 +40,45 @@ static void			*ret_error(int err_f, t_philosopher_args *philo_args)
 	return (NULL);
 }
 
-t_philosopher_args	*init_philosopher_args(t_input_args *input_args)
+void				unlink_sems(void)
+{
+	sem_unlink("forks");
+	sem_unlink("checker");
+	sem_unlink("sem_block");
+	sem_unlink("sem_print");
+}
+
+void				init_philo(t_philosopher_args *philo_args, int i,
+				t_input_args *input_args)
+{
+	philo_args[i].number_philo = i + 1;
+	philo_args[i].last_meal = 0;
+	philo_args[i].input_args = input_args;
+}
+
+t_philosopher_args	*init_philosopher_args(t_input_args *input_args, int i)
 {
 	sem_t				*forks;
-	t_philosopher_args	*philo_args;
 	sem_t				*checker_sem;
-	int					i;
+	sem_t				*sem_print;
+	sem_t				*sem_block;
+	t_philosopher_args	*philo_args;
 
 	if (!(philo_args = malloc(sizeof(t_philosopher_args) *
 		input_args->amount_philo)))
 		return (ret_error(1, NULL));
-	sem_unlink("forks");
+	unlink_sems();
 	forks = sem_open("forks", O_CREAT | O_EXCL, 0644, input_args->amount_philo);
-	sem_unlink("checker");
 	checker_sem = sem_open("checker", O_CREAT | O_EXCL, 0644, 1);
-	i = -1;
+	sem_block = sem_open("sem_block", O_CREAT | O_EXCL, 0644, 1);
+	sem_print = sem_open("sem_print", O_CREAT | O_EXCL, 0644, 1);
 	while (++i < input_args->amount_philo)
 	{
-		philo_args[i].number_philo = i + 1;
+		init_philo(philo_args, i, input_args);
 		philo_args[i].forks = forks;
-		philo_args[i].input_args = input_args;
 		philo_args[i].checker_sem = checker_sem;
-		philo_args[i].last_meal = 0;
+		philo_args[i].sem_block = sem_block;
+		philo_args[i].sem_print = sem_print;
 	}
 	return (philo_args);
 }

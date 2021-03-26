@@ -6,13 +6,13 @@
 #    By: efumiko <efumiko@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/23 21:49:08 by efumiko           #+#    #+#              #
-#    Updated: 2021/03/26 23:58:55 by efumiko          ###   ########.fr        #
+#    Updated: 2021/03/27 02:03:22 by efumiko          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = philo_three
 
-SRC = philo_three.c init_philo.c utils.c
+SRC = philo_three.c init_philo.c utils.c start_p.c
 
 OBJ = $(SRC:.c=.o)
 
